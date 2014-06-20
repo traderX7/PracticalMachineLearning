@@ -1,7 +1,7 @@
 Course on Practical Machine Learning
 ==========================
 
-Coursera Course's Course Project Writeup and submission
+Course Project Writeup and submission
 -------------------------------------
 
 This repository was created for the course project writeup which is composed of R Markdown file and its HTML document. 
