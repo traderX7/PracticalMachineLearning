@@ -1,19 +1,20 @@
 ---
 title: "Practical Machine Learning : Course Project Writeup"
+author: "                "
 date: "Thursday, June 19, 2014"
 output: html_document
 ---
 ### Introduction:
-"Human Activity Recognition (HAR)" researches have gained more attention recently[1]. Using digital data of wearable accelerometers' measurements, it's now possible to predict personal activity with statistical significance. Our project is to make a model from data provided[2] with the use of machine learninng methods. Activities here are clasiffied into five such as  'sitting', 'sitting down', 'standing', 'standing up' and 'walking'. Our work may involve creating tidy data, preprocessing data, building models and evaluation.
+"Human Activity Recognition (HAR)" studies have gained more attention recently[1]. Using digital data of wearable accelerometers' measurements, it's now possible to predict personal activity with statistical significance. Our project is to make a model from data provided[2] with the use of machine learninng methods. Activities here are clasiffied into five such as  'sitting', 'sitting down', 'standing', 'standing up' and 'walking'. Our work may involve creating tidy data, preprocessing data, building models and evaluation.
 
 ### Getting and Cleaning Data:
 We download the datasets into a folda on our machine by clicking the links below and read the csv files separated by comma into R. The training dataset is composed of 19622 rows and 160 columns and testing dataset is 20 rows and 160 columns. Since the data are messy with lots of NAs and blanks, we want to reduce the number of columns at first along with the processes as follows;
 
-- To check the column names of both files--they have the same column names except for the last one,'classe' for the training file and 'problem_id' for testing:
-- To reduce columns filled with NAs by using test file and pick up column names, and then create slimmed train file with the last column of 'classe'. Now we have 60 columns:
+- To check the column names of both files -> they have the same column names except for the last one,'classe' for the training file and 'problem_id' for testing:
+- To reduce columns filled with NAs by using test file and pick up column names, and then create slimmed train dataset with the last column of 'classe'. Now we have 60 columns:
 - To reduce columns of 'X', 'user_name', 3 'timestanps' and 2 'windows', because they have nothing to do with accelerometers' measurements. Then we have 53 columns:
 
-There are discussions on whether or not to discard num_winows as a predictor. While there are cons to make it as predictor, it's not sensor measurements, so it's discarded this time.
+There are discussions on whether or not to discard num_winows as a predictor. While there are pros to use it as predictor, it's not sensor measurements, so it's discarded this time.
 
 ```{r}
 setwd("~/Coursera/PracticalMachineLearning")
@@ -34,9 +35,9 @@ dim(train.tidy);dim(test.tidy);
 ```
 
 ### Preprocessing Data:
-Looking at the internal structure of the train.tidy dataset by "str" code, we find all columns except for 'classe' are numeric or integer and classe is factor. 
-Then we do principal component analysis (PCA) to find how big variance to explain the response variable the PCs have. 18 principal components ((note)not columns) explain more than 99% of the whole variance and each PC seems to not have so big variance because even the first PC has only 26% of the whole. 
-we check correlations between variables too. We find that 11 pairs have very high correlation more than 0.9 with each other. Thinking that each data seems to be harmfully overfitting because of the PCA results and that mechine learning methods usually involve cross validation within their calculation, we use 52 variables as a predictor this time.
+Looking at the internal structure of the train.tidy dataset by "str" code, we find all columns except for 'classe' are numeric or integer and 'classe' is factor. 
+Then we do principal component analysis (PCA) to find how big variance to explain the response variable the PCs have. 18 principal components ((note) not columns) explain more than 99% of the whole variance and each PC seems to not have so big variance because even the first PC has only 26% of the whole. 
+We check correlations between variables too. We find that 11 pairs have very high correlationswhich are more than 0.9 with each other. Thinking that each data might be overfitting, we use 52 variables as a predictor this time because the PCA shows principal component doesn't have overwelming impact and mechine learning methods usually involve cross validation or other method to make data unbiased within their calculation[3], 
 
 ```{r}
 str(train.tidy[,c(1:10, 53)])
@@ -52,8 +53,8 @@ highcor<-which(M>0.9, arr.ind=T)
 ```
 
 ### Building a model:
-To train data and test a model, We create two datasets, e.g. training and testing, from train.tidy dataset. Training dataset consists of 13737 rows and 53 columns and testing dataset 5885 and 53 respectively.
-We also see graphs of a couple of variables in training dataset. Models we try here are tree method. random forest and boosting method. 
+In order to train data and test a model, We create two datasets, e.g. training and testing, from train.tidy dataset. Training dataset consists of 13737 rows and 53 columns and testing dataset 5885 and 53 respectively.
+We also see graphs of a couple of variables in training dataset. Models we try here are classification tree method, random forest and boosting method. 
 
 ```{r  fig.width=10, fig.height=6}
 inTrain<-createDataPartition(y=train.tidy$classe, p=0.7, list=F)
@@ -67,7 +68,7 @@ featurePlot(x=training[,c("roll_belt","pitch_forearm","yaw_belt","magnet_dumbbel
 ```
 
 ### Tree model
-As the first model, we try classification tree model. After training training set for a while(abount 10 minites on my mmachine[3]), we predict response variable by testing set. Then we check the prediction results and real observations of testing. Unfortunately, its accuracy is around 50%, which is not good compared with the models we try later. We plot tree chart too. 4 variables work on a node in this model.
+As the first model, we try classification tree model. After training training set for a while(abount 10 minites on my mmachine[4], we got a final model. Then we predict response variable by testing set which is out of sample phase. Then we check the prediction results and real observations of testing. Unfortunately, its accuracy is around 50%, which is not good compared with the models we try later. We plot tree chart too. 4 variables work on each node in this model.
 
 ```{r  fig.width=10, fig.height=6}
 treeFit<-train(classe~., data=train.tidy, method="rpart",
@@ -83,7 +84,7 @@ fancyRpartPlot(treeFit$finalModel)
 ```
 
 ### Random forests model
-Next, We train data with the randam frest method taking around 10 minites to finish computing.. And we make predictions wfrom testing set same as tree model. *Accuracy 100%*. Very nice model!
+Next, We train data with the randam frest method taking around 10 minites to finish computing. And we train data and make predictions from testing set which is the same process as tree model's. *Accuracy of out of sample is 100%*. Very nice model!
 
 ```{r}
 rfFit<-train(classe~., data=train.tidy, method="rf",
@@ -95,7 +96,7 @@ confusionMatrix(rfPred, testing$classe)
 ```
 
 ### Boosting model
-Boosting method is aloso high accuracy model. Training and testing dataset, we have *97% accuracy*. 
+We do the similar processed in boosting method. As a result, it has *97% accuracy* which is very good.
 
 ```{r}
 btFit<-train(classe~., data=train.tidy, method="gbm", verbose=F, 
@@ -107,7 +108,7 @@ confusionMatrix(btPred, testing$classe)
 ```
 
 ### Conclusion:
-We are going to use the model with highest accuracy, which is random forests. We have already 'test.tidy' dataset which is created pml-testing. csv file. New predictions are calculated for the answers for Course Project: Submission. It was already submitted and I got 20/20 correct.
+We are going to use the model with the highest accuracy, which is random forests. We have already 'test.tidy' dataset which is created from the first dataset, pml-testing csv file. New predictions are calculated for the answers to Course Project: Submission. It was already submitted and I got 20/20 correct.
 
 ```{r}
 ans<-predict(rfFit, test.tidy)
@@ -119,9 +120,11 @@ ans
 http://groupware.les.inf.puc-rio.br/har
 
 [2]Two datasets are available on the website as follows;
-1)The training data: 
+1)The training data:  
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
-2)The test data: 
+2)The test data:  
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
-[3]My machine's spec is OS:64 bit windows 7 professional, RAM:8 GB, CPU: i7 2.8GHz
+[3] http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr
+
+[4]My machine's spec is OS:64 bit windows 7 professional, RAM:8 GB, CPU: i7 2.8GHz
