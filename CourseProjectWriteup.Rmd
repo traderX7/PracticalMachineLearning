@@ -37,7 +37,7 @@ dim(train.tidy);dim(test.tidy);
 ### Preprocessing Data:
 Looking at the internal structure of the train.tidy dataset by "str" code, we find all columns except for 'classe' are numeric or integer and 'classe' is factor. 
 Then we do principal component analysis (PCA) to find how big variance to explain the response variable the PCs have. 18 principal components ((note) not columns) explain more than 99% of the whole variance and each PC seems to not have so big variance because even the first PC has only 26% of the whole. 
-We check correlations between variables too. We find that 11 pairs have very high correlationswhich are more than 0.9 with each other. Thinking that each data might be overfitting, we use 52 variables as a predictor this time because the PCA shows principal component doesn't have overwelming impact and mechine learning methods usually involve cross validation or other method to make data unbiased within their calculation[3], 
+We check correlations between variables too. We find that 11 pairs have very high correlations which are more than 0.9 with each other. Thinking that each data might be overfitting, we use 52 variables as a predictor this time because the PCA shows principal component doesn't have overwelming impact and mechine learning methods usually involve cross validation or other method to make data unbiased within their calculation[3], 
 
 ```{r}
 str(train.tidy[,c(1:10, 53)])
@@ -53,8 +53,8 @@ highcor<-which(M>0.9, arr.ind=T)
 ```
 
 ### Building a model:
-In order to train data and test a model, We create two datasets, e.g. training and testing, from train.tidy dataset. Training dataset consists of 13737 rows and 53 columns and testing dataset 5885 and 53 respectively.
-We also see graphs of a couple of variables in training dataset. Models we try here are classification tree method, random forest and boosting method. 
+In order to train data and test a model, We create two datasets, e.i. training and testing, from train.tidy dataset. Training dataset consists of 13737 rows and 53 columns and testing dataset 5885 and 53 respectively.
+We also see graphs of a couple of variables in training dataset. Models we try here are classification tree method, random forests and boosting method. 
 
 ```{r  fig.width=10, fig.height=6}
 inTrain<-createDataPartition(y=train.tidy$classe, p=0.7, list=F)
